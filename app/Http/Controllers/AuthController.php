@@ -65,7 +65,7 @@ class AuthController extends Controller
         }
 
         // Аутентифицируем пользователя
-        $token = Auth::login($user);
+        $token = JWTAuth::fromUser($user);
 
         // Возвращаем токен и информацию о пользователе для успешного входа
         return response()->json(['token' => $token, 'user' => $user]);

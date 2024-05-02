@@ -14,9 +14,11 @@ class Product extends Model
         'price',
         'isSale',
         'topicons',
-        'brand_id',
+        'brands_id',
         'language_id',
+        'categories_id',
         'isCashback',
+        'cashback_price',
         'cover',
         'description',
         'brief_description',
@@ -29,9 +31,13 @@ class Product extends Model
         'cover' => 'array',
     ];
 
-    public function brand()
+    public function brands()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    public function categories(){
+        return $this->belongsTo(Category::class);
     }
 
     public function language()

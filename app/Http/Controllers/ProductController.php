@@ -7,16 +7,16 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index($language)
+    public function index(Request $request)
     {
-        if (!$language) {
-            return Product::with('type', 'icon')->get();
-        }
+        $languageCode = $request->input('language');
 
-        // Иначе фильтруем категории по языковому коду
-        return Product::whereHas('language', function ($query) use ($language) {
-            $query->where('code', $language);
-        })->with('brand', 'language')->get();
+        if (!$languageCode) {
+            return Product::with('language')->get();
+        }
+        return Product::whereHas('language', function ($query) use ($languageCode) {
+            $query->where('code', $languageCode);
+        })->with('language','brands','language','categories')->get();
     }
 
     public function store(Request $request)
@@ -26,9 +26,11 @@ class ProductController extends Controller
             'price' => 'required|numeric',
             'isSale' => 'boolean',
             'topicons' => 'array',
-            'brand_id' => 'required|exists:brands,id',
+            'brands_id' => 'required|exists:brands,id',
+            'categories_id' => 'required|exists:categories,id',
             'language_id' => 'required|exists:languages,id',
             'isCashback' => 'boolean',
+            'cashback_price' => 'required|numeric',
             'cover' => 'array',
             'description' => 'nullable',
             'brief_description' => 'nullable',
@@ -49,7 +51,8 @@ class ProductController extends Controller
             'price' => 'numeric',
             'isSale' => 'boolean',
             'topicons' => 'array',
-            'brand_id' => 'exists:brands,id',
+            'cashback_price' => 'required|numeric',
+            'brands_id' => 'exists:brands,id',
             'language_id' => 'exists:languages,id',
             'isCashback' => 'boolean',
             'cover' => 'array',
