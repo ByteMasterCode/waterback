@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\OrderCreated;
 use App\Models\HistoryManager;
 use App\Models\Order;
 use App\Models\OrderProduct;
@@ -10,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class OrderStatusController extends Controller
 {
@@ -22,6 +24,7 @@ class OrderStatusController extends Controller
                 'user_id' => 'required|exists:users,id',
                 'address' => 'nullable|string',
                 'location' => 'nullable|json',
+                'courier_id' => 'nullable|exists:users,id',
                 'description' => 'nullable|string',
                 'status' => 'nullable|string|in:on hold,pending,completed',
                 'products' => 'required|array',
@@ -36,6 +39,7 @@ class OrderStatusController extends Controller
             $order->user_id = $request->user_id;
             $order->address = $request->address;
             $order->location = $request->location;
+            $order->courier_id = $request->courier_id;
             $order->is_denied = false;
             $order->total = 0;
             $order->description = $request->description;
@@ -68,6 +72,7 @@ class OrderStatusController extends Controller
 
             DB::commit();
 
+            event(new OrderCreated($order));
             // Возвращаем успешный ответ
             return response()->json(['message' => 'Order created successfully'], 201);
         } catch (\Exception $e) {
@@ -75,7 +80,7 @@ class OrderStatusController extends Controller
             DB::rollBack();
 
             // Возвращаем сообщение об ошибке
-            return response()->json(['error' => 'Failed to create order'], 500);
+            return response()->json(['error' => 'Failed to create order'.$e], 500);
         }
     }
 
@@ -227,5 +232,7 @@ class OrderStatusController extends Controller
         // Генерация уникального серийного номера (можете изменить по своему усмотрению)
         return strtoupper(substr(md5(uniqid()), 0, 8));
     }
+
+
 
 }

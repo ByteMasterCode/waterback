@@ -10,6 +10,16 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+
+    public function index()
+    {
+        // Получаем всех пользователей вместе с их ролями
+        $usersWithRoles = User::with('roles')->get();
+
+        // Возвращаем JSON с пользователями и их ролями
+        return response()->json($usersWithRoles);
+    }
+
     public function update(Request $request, $id)
     {
 

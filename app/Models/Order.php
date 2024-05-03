@@ -12,6 +12,7 @@ class Order extends Model
     protected $fillable = [
         'date',
         'user_id',
+        'courier_id',
         'address',
         'location',
         'accept_date',
@@ -27,5 +28,12 @@ class Order extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function courier()
+    {
+        return $this->belongsTo(User::class)->whereHas('roles', function ($query) {
+            $query->where('name', 'courier');
+        });
     }
 }

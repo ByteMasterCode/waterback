@@ -14,6 +14,8 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderStatusController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UsersHandleController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -31,10 +33,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::post('register',[AuthController::class,'register']);
-Route::post('login',[AuthController::class,'login']);
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth'], function () {
+
     Route::resource('brands', BrandController::class);
     Route::resource('languages', LanguageController::class);
     Route::resource('images', ImagesManagerController::class);
@@ -48,7 +51,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('news', NewsController::class);
     Route::resource('slider', SliderController::class);
     Route::get('news/{$language}', [NewsController::class, 'index']);
-
+//orders handler
     Route::post('makeOrder', [OrderStatusController::class, 'makeOrder']);
 
     Route::resource('/orders', OrderController::class);
@@ -59,10 +62,23 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/orders-total-pending', [OrderStatusController::class, 'getTotalpendingOrdersLastWeek']);
     Route::get('/orders-total-hold', [OrderStatusController::class, 'getTotalHoldOrdersLastWeek']);
 
-    Route::get('/dashboard-order',[DashboardController::class,'getOrderCountsAndLastTenOrders']);
-    Route::get('/dashboard-history',[DashboardController::class,'getLastTenHistory']);
-    Route::get('/dashboard-products',[DashboardController::class,'getProductsCount']);
-    Route::get('/dashboard-brands',[DashboardController::class,'getBrandsCount']);
-    Route::get('/dashboard-category',[DashboardController::class,'getCategoryCount']);
-    Route::get('/dashboard-users',[DashboardController::class,'getUsersCount']);
+//dashbaord
+    Route::get('/dashboard-order', [DashboardController::class, 'getOrderCountsAndLastTenOrders']);
+    Route::get('/dashboard-history', [DashboardController::class, 'getLastTenHistory']);
+    Route::get('/dashboard-products', [DashboardController::class, 'getProductsCount']);
+    Route::get('/dashboard-brands', [DashboardController::class, 'getBrandsCount']);
+    Route::get('/dashboard-category', [DashboardController::class, 'getCategoryCount']);
+    Route::get('/dashboard-users', [DashboardController::class, 'getUsersCount']);
+//get Users
+    Route::get('/users',[UserController::class,'index']);
+    Route::get('/user-admins', [UsersHandleController::class, 'getAdmins']);
+    Route::get('/user-couriers', [UsersHandleController::class, 'getCouriers']);
+    Route::get('/user-clients', [UsersHandleController::class, 'getClients']);
+//create users
+    Route::post('/user-client-create', [UsersHandleController::class, 'createClient']);
+    Route::post('/user-courier-create', [UsersHandleController::class, 'createCourier']);
+    Route::post('/user-admin-create', [UsersHandleController::class, 'createAdmin']);
+
+
 });
+
