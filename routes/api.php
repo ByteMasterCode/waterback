@@ -62,6 +62,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/orders-total-week', [OrderStatusController::class, 'getTotalCompletedOrdersLastWeek']);
     Route::get('/orders-total-pending', [OrderStatusController::class, 'getTotalpendingOrdersLastWeek']);
     Route::get('/orders-total-hold', [OrderStatusController::class, 'getTotalHoldOrdersLastWeek']);
+    Route::put('orders/{orderId}/change-courier/{courierId}', [OrderStatusController::class, 'changeOrderCourier']);
+    Route::put('orders/accept/{orderId}', [OrderStatusController::class, 'acceptOrder']);
 
 //dashbaord
     Route::get('/dashboard-order', [DashboardController::class, 'getOrderCountsAndLastTenOrders']);

@@ -42,7 +42,7 @@ class AuthController extends Controller
 
         // Аутентифицируем пользователя и генерируем токен
         $token = JWTAuth::fromUser($user);
-
+        $user->assignRole('client');
         // Возвращаем успешный ответ с токеном и данными пользователя
         return response()->json([
             'message' => 'User registered successfully',

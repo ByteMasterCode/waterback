@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Events\OrderCreated;
+use App\Models\CourierCard;
 use App\Models\HistoryManager;
 use App\Models\Order;
 use App\Models\OrderProduct;
 use App\Models\Product;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +22,6 @@ class OrderStatusController extends Controller
         try {
             // Валидация входных данных
             $request->validate([
-                'date' => 'required|date',
                 'user_id' => 'required|exists:users,id',
                 'address' => 'nullable|string',
                 'location' => 'nullable|json',
@@ -35,7 +36,7 @@ class OrderStatusController extends Controller
 
             // Создание нового заказа
             $order = new Order();
-            $order->date = $request->date;
+            $order->date = Carbon::now();
             $order->user_id = $request->user_id;
             $order->address = $request->address;
             $order->location = $request->location;
@@ -93,7 +94,7 @@ class OrderStatusController extends Controller
 
             // Находим заказ по его ID
             $order = Order::findOrFail($orderId);
-
+            $order->accept_date = Carbon::now();
             // Меняем статус заказа на "pending"
             $order->status = 'pending';
             $order->save();
@@ -226,6 +227,89 @@ class OrderStatusController extends Controller
         // Возврат общей суммы в формате JSON
         return response()->json(['total_earnings_last_7_days' => $totalCompleted]);
     }
+
+
+    public function acceptOrder(Request $request, $orderId)
+    {
+
+        // Находим заказ по переданному id
+        $order = Order::find($orderId);
+
+        // Проверяем, был ли найден заказ
+        if (!$order) {
+            // Если заказ не найден, возвращаем ошибку 404
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+        if ($order->courier_id !== null) {
+            return response()->json(['message'=>'Заказ уже был принят'],400);
+        }
+        // Проверяем, авторизован ли пользователь и имеет ли он роль курьера
+        $user = Auth::user();
+        if (!$user->hasRole('courier') || !$user) {
+            // Если пользователь не авторизован или не является курьером, возвращаем ошибку 403 (Forbidden)
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        $card = CourierCard::find($user->id);
+
+        if ($card->status !== 'active'){
+            return  response()->json(['message'=>'У вас статус не активирован!'],403);
+        }
+        // Получаем информацию о курьере
+        $courierName = $user->fullname;
+        $courierPhoneNumber = $user->phoneNumber;
+
+        // Обновляем описание заказа
+        $order->description = "Ваш заказ принят курьером. Курьер: $courierName, Телефон: $courierPhoneNumber.  \n".$order->description;
+
+        // Получаем id курьера
+        $courierId = $user->id;
+
+        // Обновляем заказ, устанавливая courier_id в id курьера
+        $order->courier_id = $courierId;
+        $order->save();
+
+        // Возвращаем успешный ответ и обновленные данные заказа
+        return response()->json(['message' => 'Order accepted successfully', 'order' => $order], 200);
+    }
+
+    public function changeOrderCourier(Request $request, $orderId,$courierId)
+    {
+
+        // Находим заказ по переданному id
+        $order = Order::find($orderId);
+
+        // Проверяем, был ли найден заказ
+        if (!$order) {
+            // Если заказ не найден, возвращаем ошибку 404
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+//        $user = Auth::user();
+//        if (!$user->hasRole('admin')) {
+//            // Если пользователь не авторизован или не является курьером, возвращаем ошибку 403 (Forbidden)
+//            return response()->json(['error' => 'Unauthorized'], 403);
+//        }
+        $courier = User::find($courierId);
+        // Получаем информацию о курьере
+        $courierName = $courier->fullname;
+        $courierPhoneNumber = $courier->phoneNumber;
+
+        // Обновляем описание заказа
+        $order->description = "Ваш заказ принят курьером. Курьер: $courierName, Телефон: $courierPhoneNumber.  ".$order->description;
+        $order->status = 'pending';
+        // Получаем id курьера
+        $courierId =$courier->id;
+
+        // Обновляем заказ, устанавливая courier_id в id курьера
+        $order->courier_id = $courierId;
+        $order->save();
+
+        // Возвращаем успешный ответ и обновленные данные заказа
+        return response()->json(['message' => 'Order courier changed successfully', 'order' => $order], 200);
+    }
+
+
+
     private function generateSerial()
     {
         // Генерация уникального серийного номера (можете изменить по своему усмотрению)
