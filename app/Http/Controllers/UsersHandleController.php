@@ -9,6 +9,7 @@ use App\services\UserService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class UsersHandleController extends Controller
@@ -103,6 +104,52 @@ class UsersHandleController extends Controller
         return response()->json(['courier' => $courier], 201);
     }
 
+    public function updateUserWithRole(Request $request, $id)
+    {
+        // Правила валидации
+        $rules = [
+            'chat_id' => 'nullable|unique:users,chat_id,' . $id,
+            'fullname' => 'nullable',
+            'phoneNumber' => 'nullable|unique:users,phoneNumber,' . $id,
+            'password' => 'nullable',
+            'address' => 'nullable',
+            'location' => 'nullable',
+            'telegram_id' => 'nullable|unique:users,telegram_id,' . $id,
+        ];
+
+        // Проверяем входные данные
+        $validator = Validator::make($request->all(), $rules);
+
+        // Если валидация не пройдена, возвращаем ошибку
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        // Обновляем информацию о пользователе с заданным id
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Обновляем данные пользователя
+        $user->fill($request->all());
+
+        // Если пароль предоставлен в запросе, хешируем его
+        if ($request->has('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        // Обновляем роль пользователя, если это необходимо
+        if ($request->has('role')) {
+            // Обновляем роль с помощью сервиса UserService
+            UserService::updateUserRole($user, $request->role);
+        }
+
+        // Возвращаем успешный ответ и обновленные данные пользователя
+        return response()->json(['user' => $user], 200);
+    }
 
     /**
      * Создать нового пользователя с ролью "admin".
@@ -159,7 +206,7 @@ class UsersHandleController extends Controller
             $query->where('name', 'admin');
         })->get();
 
-        return response()->json(['admins' => $admins], 200);
+        return response()->json( $admins, 200);
     }
 
     /**
@@ -173,7 +220,7 @@ class UsersHandleController extends Controller
             $query->where('name', 'client');
         })->get();
 
-        return response()->json(['clients' => $clients], 200);
+        return response()->json( $clients, 200);
     }
 
     /**
@@ -206,5 +253,39 @@ class UsersHandleController extends Controller
 
         // Возвращаем JSON с курьерами и их картами курьера
         return response()->json($couriersWithCards);
+    }
+
+
+    public function getUserById($id)
+    {
+        // Находим пользователя по переданному id
+        $user = User::with('roles')->find($id);
+
+        // Проверяем, был ли найден пользователь
+        if (!$user) {
+            // Если пользователь не найден, возвращаем ошибку 404
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Если пользователь найден, возвращаем его в формате JSON
+        return response()->json($user);
+    }
+
+    public function deleteUserById($id)
+    {
+        // Находим пользователя по переданному id
+        $user = User::find($id);
+
+        // Проверяем, был ли найден пользователь
+        if (!$user) {
+            // Если пользователь не найден, возвращаем ошибку 404
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // Удаляем пользователя
+        $user->delete();
+
+        // Возвращаем успешный ответ
+        return response()->json(['message' => 'User deleted successfully'], 200);
     }
 }

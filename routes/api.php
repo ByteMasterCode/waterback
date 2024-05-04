@@ -17,6 +17,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsersHandleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -74,6 +75,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/user-admins', [UsersHandleController::class, 'getAdmins']);
     Route::get('/user-couriers', [UsersHandleController::class, 'getCouriers']);
     Route::get('/user-clients', [UsersHandleController::class, 'getClients']);
+    // Маршрут для получения пользователя по его id
+    Route::get('users/{id}', [UsersHandleController::class, 'getUserById']);
+    Route::put('users/{id}', [UsersHandleController::class, 'updateUserWithRole']);
+    Route::delete('users/{id}', [UsersHandleController::class, 'deleteUserById']);
 //create users
     Route::post('/user-client-create', [UsersHandleController::class, 'createClient']);
     Route::post('/user-courier-create', [UsersHandleController::class, 'createCourier']);
@@ -81,4 +86,6 @@ Route::group(['middleware' => 'auth'], function () {
 
 
 });
+
+
 

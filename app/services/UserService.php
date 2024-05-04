@@ -5,6 +5,7 @@ namespace App\services;
 use App\Models\CourierCard;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class UserService
 {
@@ -83,5 +84,23 @@ class UserService
             'status' => 'active',
             'cash' => 0,
         ]);
+    }
+
+
+    public static function updateUserRole(User $user, $roleName)
+    {
+        // Находим роль по имени
+        $role = Role::where('name', $roleName)->first();
+
+        // Если роль не найдена, возвращаем ошибку
+        if (!$role) {
+            throw new \Exception("Role '$roleName' not found");
+        }
+
+        // Удаляем все текущие роли пользователя
+        $user->roles()->detach();
+
+        // Присваиваем новую роль пользователю
+        $user->assignRole($role);
     }
 }

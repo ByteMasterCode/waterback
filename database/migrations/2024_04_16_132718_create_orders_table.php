@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->dateTime('date');
             $table->foreignId('user_id')->constrained(); // Внешний ключ к пользователю
-            $table->foreignId('courier_id')->constrained('users')->nullable();
+            $table->foreignId('courier_id')->nullable()->constrained('users');
             $table->string('address')->nullable();
             $table->json('location')->nullable();
             $table->dateTime('accept_date')->nullable();

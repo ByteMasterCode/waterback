@@ -39,7 +39,7 @@ class OrderStatusController extends Controller
             $order->user_id = $request->user_id;
             $order->address = $request->address;
             $order->location = $request->location;
-            $order->courier_id = $request->courier_id;
+            $order->courier_id = $request->courier_id ?? null;
             $order->is_denied = false;
             $order->total = 0;
             $order->description = $request->description;
@@ -72,7 +72,6 @@ class OrderStatusController extends Controller
 
             DB::commit();
 
-            event(new OrderCreated($order));
             // Возвращаем успешный ответ
             return response()->json(['message' => 'Order created successfully'], 201);
         } catch (\Exception $e) {
