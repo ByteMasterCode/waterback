@@ -48,6 +48,7 @@ class OrderStatusController extends Controller
             $order->save();
             $total_price = 0;
             $total_count= 0;
+            $order_decription ='Maxsulotlar ro`yxati : \n';
 
             foreach ($request->products as $productData) {
                 $orderProduct = new OrderProduct();
@@ -59,16 +60,17 @@ class OrderStatusController extends Controller
                 // Получаем цену продукта и добавляем ее к общей стоимости
                 $product = Product::findOrFail($productData['product_id']);
                 $total_price += $product->price * $productData['count'];
+                $order_decription.= 'nomi : '.$product->name.' narxi : '.$product->price.' soni : '.$productData['count'].' summa = '.($product->price * $productData['count']).' so`m';
                 // Добавляем количество продукта к общему количеству
                 $total_count += $productData['count'];
             }
             $order->total = $total_price;
-
+            $order->description.= $order_decription;
             $order->save();
 
             HistoryManager::create([
                 'actions' => 'created',
-                'description' => 'Buyurtma yaratildi mahalliy yaratildi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id,
+                'description' => 'Buyurtma yaratildi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id,
             ]);
 
             DB::commit();

@@ -7,9 +7,16 @@ use Illuminate\Http\Request;
 
 class CategoryTypeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return CategoryType::all();
+        $languageCode = $request->input('language');
+
+        if (!$languageCode) {
+            return CategoryType::with('language')->get();
+        }
+        return CategoryType::whereHas('language', function ($query) use ($languageCode) {
+            $query->where('code', $languageCode);
+        })->with('language','categories')->get();
     }
 
     public function store(Request $request)
@@ -17,6 +24,8 @@ class CategoryTypeController extends Controller
         $request->validate([
             'name' => 'required',
             'type' => 'required',
+            'language_id' => 'required|exists:languages,id',
+            'icon'=>'required'
         ]);
 
         return CategoryType::create($request->all());

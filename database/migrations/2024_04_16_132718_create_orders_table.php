@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dateTime('accept_date')->nullable();
             $table->dateTime('delivered_date')->nullable();
             $table->boolean('is_denied')->default(false);
-            $table->string('description')->nullable();
+            $table->text('description')->nullable();
             $table->string('status');
             $table->decimal('total', 10, 2);
             $table->decimal('cashback', 10, 2)->nullable();

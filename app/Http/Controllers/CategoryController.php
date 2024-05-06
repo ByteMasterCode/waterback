@@ -19,7 +19,7 @@ class CategoryController extends Controller
         // Иначе фильтруем категории по языковому коду
         return Category::whereHas('language', function ($query) use ($language) {
             $query->where('code', $language);
-        })->with('type', 'icon')->get();
+        })->with('type', 'icon','products')->get();
     }
 
     public function store(Request $request)
