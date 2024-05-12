@@ -76,7 +76,7 @@ class OrderStatusController extends Controller
             DB::commit();
 
             // Возвращаем успешный ответ
-            return response()->json(['message' => 'Order created successfully'], 201);
+            return response()->json(['message' => 'Order created successfully',$order], 201);
         } catch (\Exception $e) {
             // В случае ошибки откатываем транзакцию
             DB::rollBack();
@@ -90,27 +90,44 @@ class OrderStatusController extends Controller
     public function pendingOrder(Request $request)
     {
         try {
-
             // Получаем ID заказа из запроса
             $orderId = $request->input('order_id');
 
             // Находим заказ по его ID
             $order = Order::findOrFail($orderId);
             $order->accept_date = Carbon::now();
+
             // Меняем статус заказа на "pending"
             $order->status = 'pending';
-            $order->save();
-            if (Auth::check()) {
-                // Получаем аутентифицированного пользователя через Auth::user()
-                $user = Auth::user();
-                HistoryManager::create([
-                    'actions' => 'pending',
-                    'description' => 'Buyurtma qabul qilindi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id.' qabul qilgan foydalanuvchi :'.$user->fullname,
-                ]);
+
+            // Получаем аутентифицированного пользователя через Auth::user()
+            if ($request->has('telegram_id')) {
+                $user = User::where('telegram_id', $request->input('telegram_id'))->first();
+                if ($user && $user->role == 'courier') {
+                    $order->courier_id = $user->id;
+                } else {
+                    return response()->json(['message' => 'User is not authorized as courier'], 403);
+                }
             } else {
-                // Возвращаем сообщение, если пользователь не авторизован
-                return response()->json(['message' => 'User is not authenticated'], 403);
+                if (Auth::check()) {
+                    $currentUser = Auth::user();
+                    if ($currentUser->role == 'courier') {
+                        $order->courier_id = $currentUser->id;
+                    }
+                } else {
+                    // Возвращаем сообщение, если пользователь не авторизован
+                    return response()->json(['message' => 'User is not authenticated'], 403);
+                }
             }
+
+            $order->save();
+
+            // Создаем запись в истории
+            HistoryManager::create([
+                'actions' => 'pending',
+                'description' => 'Buyurtma qabul qilindi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id.' qabul qilgan foydalanuvchi :'.$currentUser->fullname,
+            ]);
+
             // Возвращаем успешный ответ
             return response()->json(['message' => 'Order status changed to pending'], 200);
         } catch (\Exception $e) {
@@ -118,6 +135,8 @@ class OrderStatusController extends Controller
             return response()->json(['error' => 'Failed to change order status'], 500);
         }
     }
+
+
 
     public function holdOrder(Request $request)
     {
@@ -156,27 +175,43 @@ class OrderStatusController extends Controller
     public function completedOrder(Request $request)
     {
         try {
-
             // Получаем ID заказа из запроса
             $orderId = $request->input('order_id');
 
             // Находим заказ по его ID
             $order = Order::findOrFail($orderId);
 
-            // Меняем статус заказа на "pending"
+            // Меняем статус заказа на "completed"
             $order->status = 'completed';
-            $order->save();
-            if (Auth::check()) {
-                // Получаем аутентифицированного пользователя через Auth::user()
-                $user = Auth::user();
-                HistoryManager::create([
-                    'actions' => 'completed',
-                    'description' => 'Buyurtma yetkazib berildi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id.' yetkazib bergan foydalanuvchi :'.$user->fullname,
-                ]);
+
+            // Получаем аутентифицированного пользователя через Auth::user()
+            if ($request->has('telegram_id')) {
+                $user = User::where('telegram_id', $request->input('telegram_id'))->first();
+                if ($user && $user->role == 'courier') {
+                    $order->courier_id = $user->id;
+                } else {
+                    return response()->json(['message' => 'User is not authorized as courier'], 403);
+                }
             } else {
-                // Возвращаем сообщение, если пользователь не авторизован
-                return response()->json(['message' => 'User is not authenticated'], 403);
+                if (Auth::check()) {
+                    $user = Auth::user();
+                    if ($user->role == 'courier') {
+                        $order->courier_id = $user->id;
+                    }
+                } else {
+                    // Возвращаем сообщение, если пользователь не авторизован
+                    return response()->json(['message' => 'User is not authenticated'], 403);
+                }
             }
+
+            $order->save();
+
+            // Создаем запись в истории
+            HistoryManager::create([
+                'actions' => 'completed',
+                'description' => 'Buyurtma yetkazib berildi | | | vaqdi : '.$order->date.' address : '.$order->address.' tartib raqami : '.$order->id.' yetkazib bergan foydalanuvchi :'.$user->fullname,
+            ]);
+
             // Возвращаем успешный ответ
             return response()->json(['message' => 'Order status changed to completed'], 200);
         } catch (\Exception $e) {
@@ -184,6 +219,7 @@ class OrderStatusController extends Controller
             return response()->json(['error' => 'Failed to change order status'], 500);
         }
     }
+
 
     public function getTotalCompletedOrdersLastWeek()
     {

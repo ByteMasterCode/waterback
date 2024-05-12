@@ -16,7 +16,7 @@ class CategoryTypeController extends Controller
         }
         return CategoryType::whereHas('language', function ($query) use ($languageCode) {
             $query->where('code', $languageCode);
-        })->with('language','categories')->get();
+        })->with('language','categories.icon')->get();
     }
 
     public function store(Request $request)

@@ -36,6 +36,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::get('category-user',[CategoryController::class, 'index']);
+Route::get('category-user-id/{id}',[CategoryController::class, 'show']);
+Route::get('products-user', [ProductController::class,'index']);
+Route::get('category-lang/{language}', [CategoryController::class, 'index']);
+Route::get('category-type-user', [CategoryTypeController::class,'index']);
+Route::get('category-type-id/{id}', [CategoryTypeController::class,'show']);
 
 Route::group(['middleware' => 'auth'], function () {
 
@@ -46,7 +52,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('history', HistoryManagerController::class);
     Route::resource('category-type', CategoryTypeController::class);
     Route::resource('category', CategoryController::class);
-    Route::get('category-lang/{language}', [CategoryController::class, 'index']);
+
     Route::get('products-lang/{language}', [ProductController::class, 'index']);
     Route::resource('products', ProductController::class);
     Route::resource('news', NewsController::class);

@@ -37,7 +37,7 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        return Category::with('type', 'icon')->findOrFail($id);
+        return Category::with('type', 'icon','products')->findOrFail($id);
     }
 
     public function update(Request $request, $id)
