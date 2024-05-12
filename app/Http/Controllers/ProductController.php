@@ -16,7 +16,7 @@ class ProductController extends Controller
         }
         return Product::whereHas('language', function ($query) use ($languageCode) {
             $query->where('code', $languageCode);
-        })->with('language','brands','language','categories')->get();
+        })->with('language','language','categories')->get();
     }
 
     public function store(Request $request)
@@ -24,13 +24,8 @@ class ProductController extends Controller
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
-            'isSale' => 'boolean',
-            'topicons' => 'array',
-            'brands_id' => 'required|exists:brands,id',
             'categories_id' => 'required|exists:categories,id',
             'language_id' => 'required|exists:languages,id',
-            'isCashback' => 'boolean',
-            'cashback_price' => 'required|numeric',
             'cover' => 'array',
             'description' => 'nullable',
             'brief_description' => 'nullable',
@@ -48,13 +43,9 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $request->validate([
+            'name' => 'required',
             'price' => 'numeric',
-            'isSale' => 'boolean',
-            'topicons' => 'array',
-            'cashback_price' => 'required|numeric',
-            'brands_id' => 'exists:brands,id',
             'language_id' => 'exists:languages,id',
-            'isCashback' => 'boolean',
             'cover' => 'array',
         ]);
 

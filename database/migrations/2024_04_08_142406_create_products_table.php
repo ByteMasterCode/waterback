@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('price', 8, 2);
-            $table->boolean('isSale')->default(false);
-            $table->decimal('cashback_price',8,2)->nullable()->default(0);
-            $table->json('topicons')->nullable();
-            $table->foreignId('brands_id')->constrained();
+//            $table->boolean('isSale')->default(false);
+//            $table->decimal('cashback_price',8,2)->nullable()->default(0);
+//            $table->json('topicons')->nullable();
+//            $table->foreignId('brands_id')->constrained();
             $table->foreignId('language_id')->constrained();
             $table->foreignId('categories_id')->constrained();
-            $table->boolean('isCashback')->default(false);
+//            $table->boolean('isCashback')->default(false);
             $table->json('cover')->nullable();
             $table->text('description')->nullable();
             $table->text('brief_description')->nullable();

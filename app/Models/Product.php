@@ -12,13 +12,10 @@ class Product extends Model
     protected $fillable = [
         'name',
         'price',
-        'isSale',
-        'topicons',
-        'brands_id',
+
         'language_id',
         'categories_id',
         'isCashback',
-        'cashback_price',
         'cover',
         'description',
         'brief_description',
@@ -31,10 +28,6 @@ class Product extends Model
         'cover' => 'array',
     ];
 
-    public function brands()
-    {
-        return $this->belongsTo(Brand::class);
-    }
 
     public function categories(){
         return $this->belongsTo(Category::class);

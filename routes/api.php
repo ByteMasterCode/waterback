@@ -16,6 +16,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsersHandleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -36,12 +37,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
-Route::get('category-user',[CategoryController::class, 'index']);
-Route::get('category-user-id/{id}',[CategoryController::class, 'show']);
-Route::get('products-user', [ProductController::class,'index']);
+Route::get('category-user', [CategoryController::class, 'index']);
+Route::get('category-user-id/{id}', [CategoryController::class, 'show']);
+Route::get('products-user', [ProductController::class, 'index']);
 Route::get('category-lang/{language}', [CategoryController::class, 'index']);
-Route::get('category-type-user', [CategoryTypeController::class,'index']);
-Route::get('category-type-id/{id}', [CategoryTypeController::class,'show']);
+Route::get('category-type-user', [CategoryTypeController::class, 'index']);
+Route::get('category-type-id/{id}', [CategoryTypeController::class, 'show']);
 
 Route::group(['middleware' => 'auth'], function () {
 
@@ -79,7 +80,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/dashboard-category', [DashboardController::class, 'getCategoryCount']);
     Route::get('/dashboard-users', [DashboardController::class, 'getUsersCount']);
 //get Users
-    Route::get('/users',[UserController::class,'index']);
+    Route::get('/users', [UserController::class, 'index']);
     Route::get('/user-admins', [UsersHandleController::class, 'getAdmins']);
     Route::get('/user-couriers', [UsersHandleController::class, 'getCouriers']);
     Route::get('/user-clients', [UsersHandleController::class, 'getClients']);
@@ -92,7 +93,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('/user-courier-create', [UsersHandleController::class, 'createCourier']);
     Route::post('/user-admin-create', [UsersHandleController::class, 'createAdmin']);
 
-
+//warehouses
+    Route::resource('warehouses', WarehouseController::class);
 });
 
 
