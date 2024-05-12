@@ -14,6 +14,10 @@ return new class extends Migration
         Schema::create('courier_cards', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->decimal('product_count',10,2)->default(0);
+            $table->string('car_number')->default('');
+            $table->string('photo')->default('');
+            $table->string('document')->default('');
             $table->json('current_orders')->nullable();
             $table->json('completed_orders')->nullable();
             $table->decimal('cash', 10, 2)->default(0);

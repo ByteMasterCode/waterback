@@ -17,6 +17,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UsersHandleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehousesServiceController;
+use App\Http\Controllers\CourierCardServiceController;
+use App\Http\Controllers\ClientCardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
@@ -95,6 +98,15 @@ Route::group(['middleware' => 'auth'], function () {
 
 //warehouses
     Route::resource('warehouses', WarehouseController::class);
+    Route::prefix('warehouses')->group(function () {
+        Route::put('/{id}/increase-count', [WarehousesServiceController::class, 'increaseCount']);
+        Route::put('/{id}/decrease-count', [WarehousesServiceController::class, 'decreaseCount']);
+    });
+    Route::prefix('courier-cards')->group(function () {
+        Route::get('/{id}', [CourierCardServiceController::class, 'show']);
+        Route::put('/{id}/increase-count', [CourierCardServiceController::class, 'increaseCount']);
+        Route::put('/{id}/decrease-count', [CourierCardServiceController::class, 'decreaseCount']);
+    });
 });
 
 
